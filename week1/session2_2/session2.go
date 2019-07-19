@@ -9,10 +9,10 @@ import (
 	"strings"
 )
 
-func parse(text string) (a float64, b float64, arthimatic string, err error) {
+func parse(text string) (a float64, b float64, arthimetic string, err error) {
 	var expr = strings.Fields(text)
 	if len(expr) != 3 {
-		err = errors.New("invalid")
+		err = errors.New("Invalid input length")
 		return
 	}
 	a, err = strconv.ParseFloat(expr[0], 10)
@@ -20,12 +20,12 @@ func parse(text string) (a float64, b float64, arthimatic string, err error) {
 		return
 	}
 	b, err = strconv.ParseFloat(expr[2], 10)
-	arthimatic = expr[1]
+	arthimetic = expr[1]
 	return
 }
 
-func calculate(a float64, b float64, arthimatic string) (res float64, err error) {
-	switch arthimatic {
+func calculate(a float64, b float64, arthimetic string) (res float64, err error) {
+	switch arthimetic {
 	case "+":
 		res = a + b
 	case "-":
@@ -34,15 +34,19 @@ func calculate(a float64, b float64, arthimatic string) (res float64, err error)
 		res = a * b
 	case "/":
 		if b == 0 {
-			err = errors.New("division by zero")
+			err = errors.New("Division by zero")
 			return
 		} else {
 			res = float64(a) / float64(b)
 		}
 	default:
-		err = errors.New("Invalid arthimatic")
+		err = errors.New("Invalid arthimetic")
 	}
 	return
+}
+
+func logError(err error) {
+	fmt.Println("Error: ", err)
 }
 
 func main() {
@@ -50,15 +54,15 @@ func main() {
 	fmt.Print("> ")
 	for scanner.Scan() {
 		text := scanner.Text()
-		var a, b, arthimatic, err = parse(text)
+		var a, b, arthimetic, err = parse(text)
 		if err != nil {
-			fmt.Println("Error")
+			logError(err)
 		} else {
-			res, err := calculate(a, b, arthimatic)
+			res, err := calculate(a, b, arthimetic)
 			if err != nil {
-				fmt.Println("Error")
+				logError(err)
 			} else {
-				fmt.Printf("%v %s %v = %v\n", a, arthimatic, b, res)
+				fmt.Printf("%v %s %v = %v\n", a, arthimetic, b, res)
 			}
 		}
 		fmt.Print("> ")
