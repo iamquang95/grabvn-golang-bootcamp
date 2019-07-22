@@ -21,10 +21,10 @@ func main() {
 
 	// Open connection to db
 	var err error
-	// db, err = gorm.Open("postgres", "root@/todolist?parseTime=true")
-	db, err := gorm.Open("postgres", "host localhost port=5432 user=admin dbname=todolist password=password")
+	// If you use := here, it will caused an error because db is created before. TIL lol =))
+	db, err = gorm.Open("postgres", "host=localhost port=5432 user=quangle dbname=todolist password=password sslmode=disable")
 	if err != nil {
-		log.Fatal("failed to connect to database")
+		log.Fatal("failed to connect to database", err)
 	}
 	db.LogMode(true)
 	defer db.Close()
@@ -64,7 +64,7 @@ func createTodo(c *gin.Context) {
 		return
 	}
 
-	todo := Todo{
+	todo := TodoItem{
 		Title: arg.Title,
 	}
 
