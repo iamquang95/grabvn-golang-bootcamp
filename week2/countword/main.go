@@ -5,6 +5,7 @@ import (
 	"grab/week2/countword/file"
 	"log"
 	"sync"
+	"time"
 )
 
 const (
@@ -38,12 +39,6 @@ func countWordsInFiles(files chan file.FileData, counts chan result, wg *sync.Wa
 	}
 }
 
-func printResult(res result) {
-	for k, v := range res.wordsCount {
-		fmt.Println(k, ":", v)
-	}
-}
-
 func collectResults(counts chan result, wg *sync.WaitGroup) {
 	res := make(map[string]int)
 	for count := range counts {
@@ -51,11 +46,19 @@ func collectResults(counts chan result, wg *sync.WaitGroup) {
 			res[k] = res[k] + v
 		}
 	}
-	printResult(result{res})
+	fmt.Println(res)
 	wg.Done()
 }
 
+func pool(files chan file.FileData, counts chan result, nFiles int, wg *sync.WaitGroup) {
+	for i := 0; i < nFiles; i++ {
+		go countWordsInFiles(files, counts, wg)
+	}
+}
+
 func main() {
+	timeStart := time.Now()
+
 	filePaths, err := file.ListAllFiles(dataRoot)
 	if err != nil {
 		log.Fatal("Failed to read files under ", dataRoot, ": ", err)
@@ -71,11 +74,14 @@ func main() {
 	files := file.ReadTextFiles(filePaths)
 	counts := make(chan result)
 
-	go countWordsInFiles(files, counts, &wgFiles)
+	go pool(files, counts, len(filePaths), &wgFiles)
+	// go countWordsInFiles(files, counts, &wgFiles)
 	go collectResults(counts, &wgCollectResult)
 	go func() {
 		wgFiles.Wait()
 		close(counts)
 	}()
 	wgCollectResult.Wait()
+	timeEnd := time.Now()
+	log.Output(2, fmt.Sprintf("wordCounter finished in %s", timeEnd.Sub(timeStart)))
 }
