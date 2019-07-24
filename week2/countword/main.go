@@ -27,9 +27,12 @@ func countWords(file file.FileData) (result, error) {
 }
 
 func countWordsInFiles(files chan file.FileData, counts chan result, wg *sync.WaitGroup) {
-	for data := range files {
-		// TODO: Handle error here
-		wordsCnt, _ := countWords(data)
+	for file := range files {
+		if file.Err != nil {
+			log.Fatal("Failed to read file", file.Path)
+			return
+		}
+		wordsCnt, _ := countWords(file)
 		counts <- wordsCnt
 		wg.Done()
 	}
@@ -47,7 +50,6 @@ func collectResults(counts chan result, wg *sync.WaitGroup) {
 		for k, v := range count.wordsCount {
 			res[k] = res[k] + v
 		}
-		// fmt.Println(res)
 	}
 	printResult(result{res})
 	wg.Done()
