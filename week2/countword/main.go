@@ -4,17 +4,12 @@ import (
 	"fmt"
 	"grab/week2/countword/file"
 	"log"
+	"sync"
 )
 
 const (
 	dataRoot = "data"
 )
-
-func printFileData(files chan file.FileData) {
-	for data := range files {
-		fmt.Println(data.Words)
-	}
-}
 
 type result struct {
 	wordsCount map[string]int
@@ -31,32 +26,54 @@ func countWords(file file.FileData) (result, error) {
 	return result{cnt}, nil
 }
 
-func countWordsInFiles(files chan file.FileData, counts chan result) {
+func countWordsInFiles(files chan file.FileData, counts chan result, wg *sync.WaitGroup) {
 	for data := range files {
 		// TODO: Handle error here
 		wordsCnt, _ := countWords(data)
 		counts <- wordsCnt
+		wg.Done()
 	}
 }
 
-func collectResults(counts chan result) {
+func printResult(res result) {
+	for k, v := range res.wordsCount {
+		fmt.Println(k, ":", v)
+	}
+}
+
+func collectResults(counts chan result, wg *sync.WaitGroup) {
 	res := make(map[string]int)
 	for count := range counts {
 		for k, v := range count.wordsCount {
 			res[k] = res[k] + v
 		}
-		fmt.Println(res)
+		// fmt.Println(res)
 	}
+	printResult(result{res})
+	wg.Done()
 }
 
 func main() {
-	in, err := file.ReadTextFiles(dataRoot)
+	filePaths, err := file.ListAllFiles(dataRoot)
 	if err != nil {
-		log.Fatal("Failed to read files: ", err)
+		log.Fatal("Failed to read files under ", dataRoot, ": ", err)
 	}
-	// go printFileData(in)
+
+	// Add a wait group that equal number of files in folder
+	var wgFiles sync.WaitGroup
+	wgFiles.Add(len(filePaths))
+
+	var wgCollectResult sync.WaitGroup
+	wgCollectResult.Add(1)
+
+	files := file.ReadTextFiles(filePaths)
 	counts := make(chan result)
-	go countWordsInFiles(in, counts)
-	go collectResults(counts)
-	fmt.Scanln()
+
+	go countWordsInFiles(files, counts, &wgFiles)
+	go collectResults(counts, &wgCollectResult)
+	go func() {
+		wgFiles.Wait()
+		close(counts)
+	}()
+	wgCollectResult.Wait()
 }
