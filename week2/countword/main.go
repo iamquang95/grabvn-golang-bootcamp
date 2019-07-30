@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"grab/week2/countword/file"
+	"grab/week2/countword/fileutils"
 	"log"
 	"sync"
 	"time"
@@ -16,7 +16,7 @@ type result struct {
 	wordsCount map[string]int
 }
 
-func countWords(file file.FileData) (result, error) {
+func countWords(file fileutils.FileData) (result, error) {
 	cnt := make(map[string]int)
 	if file.Err != nil {
 		return result{cnt}, file.Err
@@ -27,7 +27,7 @@ func countWords(file file.FileData) (result, error) {
 	return result{cnt}, nil
 }
 
-func countWordsInFiles(files chan file.FileData, counts chan result, wg *sync.WaitGroup) {
+func countWordsInFiles(files chan fileutils.FileData, counts chan result, wg *sync.WaitGroup) {
 	for file := range files {
 		if file.Err != nil {
 			log.Fatal("Failed to read file", file.Path)
@@ -50,7 +50,7 @@ func collectResults(counts chan result, wg *sync.WaitGroup) {
 	wg.Done()
 }
 
-func pool(files chan file.FileData, counts chan result, nFiles int, wg *sync.WaitGroup) {
+func pool(files chan fileutils.FileData, counts chan result, nFiles int, wg *sync.WaitGroup) {
 	for i := 0; i < nFiles; i++ {
 		go countWordsInFiles(files, counts, wg)
 	}
@@ -59,7 +59,7 @@ func pool(files chan file.FileData, counts chan result, nFiles int, wg *sync.Wai
 func main() {
 	timeStart := time.Now()
 
-	filePaths, err := file.ListAllFiles(dataRoot)
+	filePaths, err := fileutils.ListAllFiles(dataRoot)
 	if err != nil {
 		log.Fatal("Failed to read files under ", dataRoot, ": ", err)
 	}
@@ -71,7 +71,7 @@ func main() {
 	var wgCollectResult sync.WaitGroup
 	wgCollectResult.Add(1)
 
-	files := file.ReadTextFiles(filePaths)
+	files := fileutils.ReadTextFiles(filePaths)
 	counts := make(chan result)
 
 	go pool(files, counts, len(filePaths), &wgFiles)
