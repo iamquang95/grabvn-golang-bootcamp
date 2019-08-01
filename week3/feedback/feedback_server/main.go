@@ -15,24 +15,33 @@ const (
 
 type server struct{}
 
+var feedbackDB = CreateNewFeedbacks()
+
 func (s *server) AddPassengerFeedback(ctx context.Context, in *pb.AddPassengerFeedbackRequest) (*pb.AddPassengerFeedbackResponse, error) {
 	log.Println("add new customer feedback:", in.Feedback)
+	err := feedbackDB.AddFeedback(in.Feedback)
+	if err != nil {
+		return &pb.AddPassengerFeedbackResponse{Msg: "Error"}, err
+	}
 	return &pb.AddPassengerFeedbackResponse{Msg: "Success"}, nil
 }
 
 func (s *server) GetFeedbacksByPassengerID(ctx context.Context, in *pb.GetFeedbacksByPassengerIdRequest) (*pb.GetFeedbacksByPassengerIdResponse, error) {
 	log.Println("get feedback by passengerId =", in.PassengerID)
-	return &pb.GetFeedbacksByPassengerIdResponse{Feedbacks: make([]*pb.PassengerFeedback, 0)}, nil
+	feedbacks, err := feedbackDB.GetFeedbackByPassengerID(in.PassengerID)
+	return &pb.GetFeedbacksByPassengerIdResponse{Feedbacks: feedbacks}, err
 }
 
 func (s *server) GetFeedbackByBookingCode(ctx context.Context, in *pb.GetFeedbackByBookingCodeRequest) (*pb.GetFeedbackByBookingCodeResponse, error) {
 	log.Println("get feedback by bookingCode =", in.BookingCode)
-	return &pb.GetFeedbackByBookingCodeResponse{Feedback: &pb.PassengerFeedback{}}, nil
+	feedback, err := feedbackDB.GetFeedbackByBookingCode(in.BookingCode)
+	return &pb.GetFeedbackByBookingCodeResponse{Feedback: &feedback}, err
 }
 
 func (s *server) DeleteFeedbacksByPassengerID(ctx context.Context, in *pb.DeleteFeedbacksByPassengerIdRequest) (*pb.DeleteFeedbacksByPassengerIdResponse, error) {
 	log.Println("delete feedback by passengerId =", in.PassengerID)
-	return &pb.DeleteFeedbacksByPassengerIdResponse{DeletedFeedbacks: 0}, nil
+	deletedFeedbacks, err := feedbackDB.DeleteFeedbacksByPassengerID(in.PassengerID)
+	return &pb.DeleteFeedbacksByPassengerIdResponse{DeletedFeedbacks: deletedFeedbacks}, err
 }
 
 func main() {

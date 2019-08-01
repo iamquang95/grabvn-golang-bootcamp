@@ -70,17 +70,17 @@ func simulateData(ctx context.Context, c pb.CustomerFeedbackClient) {
 		PassengerID: 2,
 		Feedback:    "bad",
 	}
-	addPassengerFeedback(ctx, c, &feedback1)
-	addPassengerFeedback(ctx, c, &feedback1)
-	addPassengerFeedback(ctx, c, &feedback3)
-	getFeedbackByBookingCode(ctx, c, feedback1.BookingCode)
-	getFeedbackByBookingCode(ctx, c, feedback2.BookingCode)
-	getFeedbacksByPassengerID(ctx, c, feedback1.PassengerID)
-	addPassengerFeedback(ctx, c, &feedback2)
-	getFeedbackByBookingCode(ctx, c, feedback2.BookingCode)
-	getFeedbacksByPassengerID(ctx, c, feedback1.PassengerID)
-	deleteFeedbacksByPassengerID(ctx, c, feedback3.PassengerID)
-	getFeedbacksByPassengerID(ctx, c, feedback3.PassengerID)
+	addPassengerFeedback(ctx, c, &feedback1)                    // Success
+	addPassengerFeedback(ctx, c, &feedback1)                    // Failed, duplicated
+	addPassengerFeedback(ctx, c, &feedback3)                    // Success
+	getFeedbackByBookingCode(ctx, c, feedback1.BookingCode)     // Return feedback 1
+	getFeedbackByBookingCode(ctx, c, feedback2.BookingCode)     // Failed, non-existing
+	getFeedbacksByPassengerID(ctx, c, feedback1.PassengerID)    // Return 1
+	addPassengerFeedback(ctx, c, &feedback2)                    // Success
+	getFeedbackByBookingCode(ctx, c, feedback2.BookingCode)     // Return feedback 2
+	getFeedbacksByPassengerID(ctx, c, feedback1.PassengerID)    // Return feedback 1
+	deleteFeedbacksByPassengerID(ctx, c, feedback3.PassengerID) // Deleted 1
+	getFeedbacksByPassengerID(ctx, c, feedback3.PassengerID)    // Empty
 }
 
 func main() {
