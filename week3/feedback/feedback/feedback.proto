@@ -6,11 +6,11 @@ service CustomerFeedback {
   // Add a customer feedback
   rpc AddCustomerFeedback(AddCustomerFeedbackRequest) returns (AddCustomerFeedbackResponse) {}
   // Get feedback by passengerID 
-  rpc GetFeedbacksByPassengerId(GetFeedbacksByPassengerIdRequest) returns (GetFeedbacksByPassengerIdResponse) {}
+  rpc GetFeedbacksByPassengerID(GetFeedbacksByPassengerIdRequest) returns (GetFeedbacksByPassengerIdResponse) {}
   // Get feedback by booking code
   rpc GetFeedbackByBookingCode(GetFeedbackByBookingCodeRequest) returns (GetFeedbackByBookingCodeResponse) {}
   // Delete feedbacks by passengerID
-  rpc DeleteFeedbacksByPassengerId(DeleteFeedbacksByPassengerIdRequest) returns (DeleteFeedbacksByPassengerIdResponse) {}
+  rpc DeleteFeedbacksByPassengerID(DeleteFeedbacksByPassengerIdRequest) returns (DeleteFeedbacksByPassengerIdResponse) {}
 }
 
 message PassengerFeedback {
