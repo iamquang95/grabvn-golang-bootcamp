@@ -2,15 +2,35 @@ syntax = "proto3";
 
 package feedback;
 
+import "google/api/annotations.proto";
+
 service CustomerFeedback {
   // Add a customer feedback
-  rpc AddPassengerFeedback(AddPassengerFeedbackRequest) returns (AddPassengerFeedbackResponse) {}
+  rpc AddPassengerFeedback(AddPassengerFeedbackRequest) returns (AddPassengerFeedbackResponse) {
+    option (google.api.http) = {
+      post: "/v1/feedback/addPassengerFeedback"
+      body: "*"
+    };
+  }
   // Get feedback by passengerID 
-  rpc GetFeedbacksByPassengerID(GetFeedbacksByPassengerIdRequest) returns (GetFeedbacksByPassengerIdResponse) {}
+  rpc GetFeedbacksByPassengerID(GetFeedbacksByPassengerIdRequest) returns (GetFeedbacksByPassengerIdResponse) {
+    option (google.api.http) = {
+      get: "/v1/feedback/getFeedbacksByPassengerID"
+    };
+  }
   // Get feedback by booking code
-  rpc GetFeedbackByBookingCode(GetFeedbackByBookingCodeRequest) returns (GetFeedbackByBookingCodeResponse) {}
+  rpc GetFeedbackByBookingCode(GetFeedbackByBookingCodeRequest) returns (GetFeedbackByBookingCodeResponse) {
+    option (google.api.http) = {
+      get: "/v1/feedback/getFeedbackByBookingCode"
+    };
+  }
   // Delete feedbacks by passengerID
-  rpc DeleteFeedbacksByPassengerID(DeleteFeedbacksByPassengerIdRequest) returns (DeleteFeedbacksByPassengerIdResponse) {}
+  rpc DeleteFeedbacksByPassengerID(DeleteFeedbacksByPassengerIdRequest) returns (DeleteFeedbacksByPassengerIdResponse) {
+    option (google.api.http) = {
+      post: "/v1/feedback/deleteFeedbacksByPassengerID"
+      body: "*"
+    };
+  }
 }
 
 message PassengerFeedback {
