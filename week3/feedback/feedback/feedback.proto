@@ -4,7 +4,7 @@ package feedback;
 
 service CustomerFeedback {
   // Add a customer feedback
-  rpc AddCustomerFeedback(AddCustomerFeedbackRequest) returns (AddCustomerFeedbackResponse) {}
+  rpc AddPassengerFeedback(AddPassengerFeedbackRequest) returns (AddPassengerFeedbackResponse) {}
   // Get feedback by passengerID 
   rpc GetFeedbacksByPassengerID(GetFeedbacksByPassengerIdRequest) returns (GetFeedbacksByPassengerIdResponse) {}
   // Get feedback by booking code
@@ -19,11 +19,11 @@ message PassengerFeedback {
   string feedback = 3;
 }
 
-message AddCustomerFeedbackRequest {
+message AddPassengerFeedbackRequest {
   PassengerFeedback feedback = 1;
 }
 
-message AddCustomerFeedbackResponse {
+message AddPassengerFeedbackResponse {
   string msg = 1;
 }
 

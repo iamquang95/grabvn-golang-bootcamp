@@ -15,9 +15,9 @@ const (
 
 type server struct{}
 
-func (s *server) AddCustomerFeedback(ctx context.Context, in *pb.AddCustomerFeedbackRequest) (*pb.AddCustomerFeedbackResponse, error) {
+func (s *server) AddPassengerFeedback(ctx context.Context, in *pb.AddPassengerFeedbackRequest) (*pb.AddPassengerFeedbackResponse, error) {
 	log.Println("add new customer feedback:", in.Feedback)
-	return &pb.AddCustomerFeedbackResponse{Msg: "Success"}, nil
+	return &pb.AddPassengerFeedbackResponse{Msg: "Success"}, nil
 }
 
 func (s *server) GetFeedbacksByPassengerID(ctx context.Context, in *pb.GetFeedbacksByPassengerIdRequest) (*pb.GetFeedbacksByPassengerIdResponse, error) {
