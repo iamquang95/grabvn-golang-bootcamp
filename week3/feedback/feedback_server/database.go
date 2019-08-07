@@ -6,28 +6,25 @@ import (
 )
 
 type Feedbacks struct {
-	ExistingBookingCode map[string]bool
+	Feedbacks           map[string]pb.PassengerFeedback
 	ExistingPassengerID map[int32]bool
-	Feedbacks           []pb.PassengerFeedback
 }
 
 // CreateNewFeedbacks create new feedback database
 func CreateNewFeedbacks() Feedbacks {
 	return Feedbacks{
-		ExistingBookingCode: make(map[string]bool),
 		ExistingPassengerID: make(map[int32]bool),
-		Feedbacks:           make([]pb.PassengerFeedback, 0),
+		Feedbacks:           make(map[string]pb.PassengerFeedback),
 	}
 }
 
 // AddFeedback add new feedback to database
 func (fb *Feedbacks) AddFeedback(feedback *pb.PassengerFeedback) error {
-	if fb.ExistingBookingCode[feedback.BookingCode] == true {
+	if _, ok := fb.Feedbacks[feedback.BookingCode]; ok {
 		return errors.New("Duplicated booking code")
 	}
-	fb.ExistingBookingCode[feedback.BookingCode] = true
+	fb.Feedbacks[feedback.BookingCode] = *feedback
 	fb.ExistingPassengerID[feedback.PassengerID] = true
-	fb.Feedbacks = append(fb.Feedbacks, *feedback)
 	return nil
 }
 
@@ -36,31 +33,23 @@ func (fb *Feedbacks) DeleteFeedbacksByPassengerID(psgID int32) (int32, error) {
 	if fb.ExistingPassengerID[psgID] == false {
 		return 0, errors.New("Non-existing passengerId")
 	}
-	var newFeedbacks []pb.PassengerFeedback
 	var cntDeleted int32
 	for _, feedback := range fb.Feedbacks {
 		if feedback.PassengerID == psgID {
-			fb.ExistingBookingCode[feedback.BookingCode] = false
+			delete(fb.Feedbacks, feedback.BookingCode)
 			cntDeleted++
-		} else {
-			newFeedbacks = append(newFeedbacks, feedback)
 		}
 	}
-	fb.Feedbacks = newFeedbacks
 	return cntDeleted, nil
 }
 
 // GetFeedbackByBookingCode get feedback by booking code
 func (fb *Feedbacks) GetFeedbackByBookingCode(bookingCode string) (pb.PassengerFeedback, error) {
-	if fb.ExistingBookingCode[bookingCode] == false {
+	feedback, ok := fb.Feedbacks[bookingCode]
+	if !ok {
 		return pb.PassengerFeedback{}, errors.New("Non-existing booking code")
 	}
-	for _, feedback := range fb.Feedbacks {
-		if feedback.BookingCode == bookingCode {
-			return feedback, nil
-		}
-	}
-	return pb.PassengerFeedback{}, nil
+	return feedback, nil
 }
 
 // GetFeedbackByPassengerID get feedbacks by passengerID
