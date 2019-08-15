@@ -49,6 +49,42 @@ func (s *ToDoRepositorySuite) TestInsert() {
 	newTodo, err := s.todoRep.Get(item.Id)
 	s.Nil(err)
 	s.Equal(item, newTodo)
+
+	err = s.todoRep.Delete(item.Id)
+	s.Nil(err)
+}
+
+func (s *ToDoRepositorySuite) TestDeleteNonExistItem() {
+	err := s.todoRep.Delete("new")
+	s.NotNil(err)
+}
+
+func (s *ToDoRepositorySuite) TestList() {
+	item1 := &pb.Todo{Id: "td1", Title: "Todo 1", Completed: true}
+	err1 := s.todoRep.Insert(item1)
+	s.Nil(err1)
+
+	item2 := &pb.Todo{Id: "td2", Title: "Todo 2", Completed: false}
+	err2 := s.todoRep.Insert(item2)
+	s.Nil(err2)
+
+	res, err := s.todoRep.List(2, false)
+	expectedRes := []*pb.Todo{item1, item2}
+
+	s.Nil(err)
+	s.Equal(expectedRes, res)
+
+	res, err = s.todoRep.List(1, false)
+	expectedRes = []*pb.Todo{item1}
+
+	s.Nil(err)
+	s.Equal(expectedRes, res)
+}
+
+func (s *ToDoRepositorySuite) TestGetNonExistingElem() {
+	result, err := s.todoRep.Get("non-exist")
+	s.NotNil(err)
+	s.Nil(nil, result)
 }
 
 func TestToDoRepository(t *testing.T) {
