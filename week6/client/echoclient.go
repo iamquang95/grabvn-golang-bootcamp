@@ -3,49 +3,51 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 
-	"github.com/avast/retry-go"
+	"grab/week6/client/httpgetter"
+
+	"github.com/myteksi/hystrix-go/hystrix"
+)
+
+const (
+	url          = "http://127.0.0.1:8080/iamquang95"
+	maxRetry     = 2
+	maxGetRepeat = 100
 )
 
 func main() {
-	url := "http://127.0.0.1:8080/test"
-
-	body, err := getHTTPRequestWithRetry(url, 2)
-
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-
-	fmt.Println(string(body))
-
+	initCircuitBreaker()
+	httpGetter := httpgetter.NewHTTPGetterWithRetry(maxRetry)
+	echoCircutBreaker(url, httpGetter)
 }
 
-func getHTTPRequestWithRetry(url string, maxRetry uint) ([]byte, error) {
-	var body []byte
-	err := retry.Do(
-		func() error {
-			resp, err := http.Get(url)
+func echoCircutBreaker(url string, httpGetter httpgetter.HTTPGetter) {
+	for i := 1; i <= maxGetRepeat; i++ {
+		j := i
+		hystrix.Do("echo", func() error {
+			fmt.Printf("Get echo #%d\n", j)
+
+			body, err := httpGetter.Get(url)
 
 			if err != nil {
-				return err
-			}
-			if resp.StatusCode == 500 || resp.StatusCode == 501 {
-				fmt.Println("Got internal server error")
-				return errors.New("Internal server error")
+				fmt.Println(err.Error())
 			}
 
-			defer resp.Body.Close()
-			body, err = ioutil.ReadAll(resp.Body)
+			fmt.Println(string(body))
+			return err
+		}, func(err error) error {
+			fmt.Printf("Get echo #%d: fallback, service is down\n", j)
+			return errors.New("Fallback")
+		})
+	}
+}
 
-			if err != nil {
-				return err
-			}
-
-			return nil
-		},
-		retry.Attempts(maxRetry),
-	)
-	return body, err
+func initCircuitBreaker() {
+	hystrix.ConfigureCommand("echo", hystrix.CommandConfig{
+		Timeout:                     1000,
+		MaxConcurrentRequests:       1,
+		ErrorPercentThreshold:       10,
+		QueueSizeRejectionThreshold: 100,
+		SleepWindow:                 10,
+	})
 }
